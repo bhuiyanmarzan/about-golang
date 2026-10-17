@@ -185,3 +185,46 @@ func main() {
 	fmt.Println("Olx-api server is running...")
 }
 ```
+Your remote has commits your local branch doesn't have (often a README or .gitignore added via GitHub's web UI). You need to integrate them before pushing.
+
+Recommended: pull with rebase (keeps history linear)
+```bash
+git pull --rebase origin main
+git push origin main
+```
+### How Production-Grade Apps Handle Config
+```bash
+PORT=8080 make run
+```
+to get this PORT variable
+```go
+srv := http.Server{
+		Addr:         ":" + os.Getenv("PORT"),
+		Handler:      mux,
+		ReadTimeout:  time.Second * 10,
+		WriteTimeout: time.Second * 30,
+		IdleTimeout:  time.Second * 60,
+	}
+```
+now problem is lot of env that con't send to the command
+```bash
+PORT=8080 ............make run
+```
+solotion .env
+```bash
+#.env
+PORT=8080
+```
+now start the server
+```text
+starting olx server...
+2026/10/17 08:36:24 server is listening on :
+```
+port not bind because os.Getenv that can't read the .env file, that possible using file system, for this best practise a package
+```text
+https://github.com/joho/godotenv
+```
+indirect packages
+```bash
+go mod tidy
+```
