@@ -104,3 +104,84 @@ add .gitignore file
 ```bash
 .gitignore
 ```
+### Build Production-Ready Server using Golang
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	})
+
+	err := http.ListenAndServe(":8090", nil)
+	if err != nil {
+		log.Fatalf("server failed %v", err)
+	}
+	fmt.Println("Olx-api server is running...")
+}
+```
+it if bad practise for go http is global Default servemux call, mux = multiplexer
+
+problem
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
+)
+
+func main() {
+	http.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	})
+
+	err := http.ListenAndServe(":8090", nil)
+	if err != nil {
+		log.Fatalf("server failed %v", err)
+	}
+	fmt.Println("Olx-api server is running...")
+}
+```
+then 
+```
+http://localhost:8090/debug/pprof
+```
+solution
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
+)
+
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	})
+
+	err := http.ListenAndServe(":8090", mux)
+	if err != nil {
+		log.Fatalf("server failed %v", err)
+	}
+	fmt.Println("Olx-api server is running...")
+}
+```
